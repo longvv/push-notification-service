@@ -162,7 +162,7 @@ The documentation for this project is organized into several documents to help y
    curl http://localhost:3001/api/healthcheck
    ```
 
-For more detailed setup instructions, refer to the [Setup Guide](Setup_and_configuration_guide.md).
+For more detailed setup instructions, refer to the [Setup Guide](https://github.com/longvv/push-notification-service/blob/main/Setup_and_configurationc_guide.md).
 
 ## API Reference
 
