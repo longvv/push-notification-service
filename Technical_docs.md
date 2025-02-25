@@ -1,6 +1,10 @@
-# Technical Code Documentation
+# Technical Documentation
 
-This document provides detailed technical documentation for the Push Notification Service codebase, explaining the architecture, patterns, and implementation details.
+This document provides detailed technical documentation for the Push Notification Service codebase, explaining the current architecture, patterns, and implementation details.
+
+## Current Implementation Status
+
+For a detailed overview of which features are implemented vs. planned, please refer to the [Implementation Status](IMPLEMENTATION_STATUS.md) document.
 
 ## Project Structure
 
@@ -9,12 +13,15 @@ push-notification-service/
 ├── docker-compose.yml       # Docker services configuration
 ├── init-scripts/            # Database initialization scripts
 │   └── 01-init.sql          # SQL script for database setup
-├── logstash/                # Logstash configuration
-│   └── pipeline/            # Logstash pipeline config
+├── logstash/                # Logstash configuration (for future use)
 ├── prometheus/              # Prometheus configuration
+│   └── prometheus.yml       # Prometheus metrics configuration
 ├── src/                     # Main application code
 │   ├── api/                 # REST API implementation
 │   │   ├── controllers/     # API endpoint controllers
+│   │   │   ├── devices.js   # Device controller
+│   │   │   ├── notifications.js # Notification controller
+│   │   │   └── users.js     # User controller
 │   │   ├── index.js         # API server setup
 │   │   └── routes.js        # API route definitions
 │   ├── config/              # Service configurations
@@ -22,7 +29,7 @@ push-notification-service/
 │   │   ├── logging.js       # Winston logger config
 │   │   ├── metrics.js       # Prometheus metrics
 │   │   ├── rabbitmq.js      # RabbitMQ connection and queues
-│   │   └── redis.js         # Redis connection
+│   │   └── redis.js         # Redis connection (partially implemented)
 │   ├── models/              # Database models
 │   │   ├── device.js        # Device model
 │   │   ├── index.js         # Model exports
@@ -34,9 +41,11 @@ push-notification-service/
 │   │   ├── index.js         # Worker initialization
 │   │   └── notificationWorker.js # Notification processing
 │   └── index.js             # Main application entry point
+├── data-generators/         # Test data generation tools
+│   └── data-generator.js    # Database seeder script
 ├── .env.example             # Example environment variables
-├── .gitignore               # Git ignore file
-├── package.json             # NPM package configuration
+├── Dockerfile               # Docker image configuration
+├── Makefile                 # Helper commands
 └── README.md                # Project README
 ```
 
@@ -51,6 +60,7 @@ The API server is built using Express.js and provides RESTful endpoints for inte
 - Controller implementation (`controllers/`)
 - Middleware configuration (`index.js`)
 - Error handling and logging
+- Prometheus metrics endpoint (`/metrics`)
 
 #### API Server Initialization:
 
@@ -60,17 +70,42 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const router = require('./routes');
+const { register } = require('../config/metrics');
+const logger = require('../config/logging');
 
 const createServer = () => {
   const app = express();
   
-  // Security middleware
+  // Middleware
   app.use(helmet());
   app.use(cors());
   app.use(express.json());
   
+  // Logging middleware
+  app.use((req, res, next) => {
+    const start = Date.now();
+    
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      logger.info({
+        method: req.method,
+        url: req.originalUrl,
+        status: res.statusCode,
+        duration,
+      });
+    });
+    
+    next();
+  });
+  
   // Routes
   app.use('/api', router);
+  
+  // Prometheus metrics endpoint
+  app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  });
   
   // Error handling
   app.use((err, req, res, next) => {
@@ -80,13 +115,15 @@ const createServer = () => {
   
   return app;
 };
+
+module.exports = createServer;
 ```
 
 ### 2. Database Models (src/models)
 
 The application uses Sequelize ORM to interact with PostgreSQL. The models represent the database tables and their relationships.
 
-#### Key Models:
+#### Implemented Models:
 
 - **User**: Represents application users
 - **Device**: Represents user devices for notification delivery
@@ -122,17 +159,37 @@ const Notification = sequelize.define('Notification', {
     type: DataTypes.TEXT,
     allowNull: true
   },
-  // Additional fields...
+  data: {
+    type: DataTypes.JSONB,
+    allowNull: true
+  },
+  status: {
+    type: DataTypes.STRING(50),
+    allowNull: true
+  },
+  sent_at: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  created_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  }
+}, {
+  tableName: 'notifications',
+  timestamps: false
 });
 
 // Define relationships
 Notification.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 User.hasMany(Notification, { foreignKey: 'user_id', as: 'notifications' });
+
+module.exports = Notification;
 ```
 
 ### 3. WebSocket Server (src/websocket)
 
-The WebSocket server enables real-time bidirectional communication with clients, primarily for delivering notifications instantly.
+The WebSocket server enables real-time bidirectional communication with clients for delivering notifications instantly.
 
 #### Key Features:
 
@@ -144,11 +201,13 @@ The WebSocket server enables real-time bidirectional communication with clients,
 #### WebSocket Implementation:
 
 ```javascript
-// src/websocket/index.js
+// src/websocket/index.js (partial)
 const socketIO = require('socket.io');
 const logger = require('../config/logging');
+const { metrics } = require('../config/metrics');
 
 const setupWebsocket = (server) => {
+  // Initialize Socket.IO with CORS settings
   const io = socketIO(server, {
     cors: {
       origin: '*',
@@ -156,7 +215,7 @@ const setupWebsocket = (server) => {
     }
   });
 
-  // Track active connections
+  // Track active connections for metrics
   const activeConnections = new Set();
 
   io.on('connection', (socket) => {
@@ -166,14 +225,29 @@ const setupWebsocket = (server) => {
     activeConnections.add(socket.id);
     metrics.activeWebsocketConnections.set(activeConnections.size);
     
-    // Handle authentication
+    // Handle user authentication
     socket.on('authenticate', async (data) => {
-      // Authentication logic...
+      try {
+        const { userId } = data;
+        if (!userId) {
+          return socket.emit('error', { message: 'User ID is required' });
+        }
+
+        // Associate socket with user
+        socket.userId = userId;
+        await socket.join(`user:${userId}`);
+        
+        socket.emit('authenticated', { success: true });
+        logger.info(`User ${userId} authenticated on socket ${socket.id}`);
+      } catch (error) {
+        logger.error('Authentication error:', error);
+        socket.emit('error', { message: 'Authentication failed' });
+      }
     });
     
     // Handle disconnection
     socket.on('disconnect', async () => {
-      // Disconnection logic...
+      // Implementation details
     });
   });
 
@@ -183,35 +257,65 @@ const setupWebsocket = (server) => {
 
 ### 4. Message Queue Workers (src/workers)
 
-Workers process messages from RabbitMQ queues to deliver notifications through various channels.
+Workers process messages from RabbitMQ queues to deliver notifications to users.
 
 #### Key Features:
 
 - Immediate notification processing
-- Scheduled notification processing
-- Error handling and retry logic
-- Delivery status tracking
+- Error handling
+- WebSocket notification delivery
+- Metrics tracking
 
 #### Worker Implementation:
 
 ```javascript
-// src/workers/notificationWorker.js
+// src/workers/notificationWorker.js (partial)
 const { consumeMessages } = require('../config/rabbitmq');
 const { User, Device, Notification } = require('../models');
 const logger = require('../config/logging');
+const { metrics } = require('../config/metrics');
+const websocket = require('../websocket');
 
 const processImmediateNotifications = async () => {
   logger.info('Starting immediate notification worker');
   
   await consumeMessages('immediate_notifications', async (message) => {
+    const startTime = Date.now();
+    
     try {
       const { notification_id, user_id, title, body, data } = message;
+      logger.info(`Processing notification ${notification_id} for user ${user_id}`);
       
-      // Process and send notification...
+      // Get user devices to send notification to
+      const devices = await Device.findAll({
+        where: { user_id }
+      });
+      
+      // Send via WebSocket
+      const socketSent = await websocket.sendNotificationToUser(user_id, {
+        id: notification_id,
+        title,
+        body,
+        data
+      });
+      
+      // Update notification status
+      await Notification.update(
+        { 
+          status: 'delivered',
+          sent_at: new Date()
+        },
+        { where: { id: notification_id } }
+      );
+      
+      // Metrics
+      metrics.notificationsSent.inc({ status: 'success', type: 'immediate' });
+      const latency = (Date.now() - startTime) / 1000;
+      metrics.notificationLatency.observe({ type: 'immediate' }, latency);
       
     } catch (error) {
       logger.error('Error processing notification:', error);
-      // Error handling logic...
+      metrics.notificationsSent.inc({ status: 'error', type: 'immediate' });
     }
   });
 };
@@ -224,46 +328,16 @@ Configuration modules handle connections to external services and define their u
 #### Key Configurations:
 
 - **database.js**: PostgreSQL connection and Sequelize setup
-- **redis.js**: Redis client configuration
+- **redis.js**: Redis client configuration (partial implementation)
 - **rabbitmq.js**: RabbitMQ connection, exchanges, and queues
 - **logging.js**: Winston logger configuration
 - **metrics.js**: Prometheus metrics definition
 
-#### Configuration Example:
-
-```javascript
-// src/config/rabbitmq.js
-const amqp = require('amqplib');
-let connection = null;
-let channel = null;
-
-const connectRabbitMQ = async () => {
-  try {
-    const host = process.env.RABBITMQ_HOST || 'localhost';
-    const port = process.env.RABBITMQ_PORT || 5672;
-    const user = process.env.RABBITMQ_USER || 'admin';
-    const password = process.env.RABBITMQ_PASSWORD || 'admin123';
-    
-    const url = `amqp://${user}:${password}@${host}:${port}`;
-    
-    connection = await amqp.connect(url);
-    channel = await connection.createChannel();
-    
-    // Define exchanges and queues...
-    
-    return { connection, channel };
-  } catch (error) {
-    console.error('Failed to connect to RabbitMQ:', error);
-    setTimeout(connectRabbitMQ, 5000);
-  }
-};
-```
-
 ## Database Schema
 
-The database schema is defined in the `init-scripts/01-init.sql` file and implemented through Sequelize models.
+The current database schema is defined in the `init-scripts/01-init.sql` file and implemented through Sequelize models.
 
-### Tables Structure:
+### Currently Implemented Tables:
 
 #### users
 ```sql
@@ -298,7 +372,7 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 ```
 
-Additional tables support notification preferences, delivery tracking, and auditing.
+The schema file also defines additional tables that are planned for future implementation.
 
 ## Message Queue Architecture
 
@@ -311,12 +385,12 @@ The service uses RabbitMQ for reliable message delivery, with the following comp
 ### Queues
 
 - **immediate_notifications**: For notifications to be delivered immediately
-- **scheduled_notifications**: For notifications scheduled for future delivery
+- **scheduled_notifications**: For notifications scheduled for future delivery (currently only defined, not fully implemented)
 
 ### Routing Keys
 
 - **notification.immediate**: Routes to immediate_notifications queue
-- **notification.scheduled**: Routes to scheduled_notifications queue
+- **notification.scheduled**: Routes to scheduled_notifications queue (planned for future implementation)
 
 ### Message Structure
 
@@ -327,7 +401,7 @@ The service uses RabbitMQ for reliable message delivery, with the following comp
   title: "Notification Title", // Notification title
   body: "Notification body",   // Notification message
   data: { ... },              // Additional data payload
-  scheduled_time: "2023-05-01T12:00:00Z" // For scheduled notifications
+  scheduled_time: "2023-05-01T12:00:00Z" // For scheduled notifications (planned)
 }
 ```
 
@@ -338,7 +412,6 @@ The WebSocket implementation uses Socket.IO and defines the following events:
 ### Server to Client Events
 
 - **notification**: Sends notification data to a specific user
-- **broadcast**: Sends announcement to all connected users
 - **authenticated**: Confirms successful authentication
 - **error**: Sends error information to client
 
@@ -346,24 +419,6 @@ The WebSocket implementation uses Socket.IO and defines the following events:
 
 - **authenticate**: Client sends user ID to associate the socket with a user
 - **disconnect**: Client disconnects from the server
-
-### Event Data Examples
-
-Authentication request:
-```javascript
-socket.emit('authenticate', { userId: 123 });
-```
-
-Notification event:
-```javascript
-// Server to client
-socket.emit('notification', {
-  id: 456,
-  title: "New Message",
-  body: "You have a new message",
-  data: { ... }
-});
-```
 
 ## Error Handling Approach
 
@@ -380,12 +435,10 @@ The service implements multiple layers of error handling:
 - Try/catch blocks for message processing
 - Error logging to the centralized logging system
 - Message acknowledgement only after successful processing
-- Failed message handling with RabbitMQ mechanisms
 
 ### Connection Error Handling
 
-- Automatic reconnection for database, Redis, and RabbitMQ
-- Exponential backoff for retry attempts
+- Basic reconnection logic for database and message queue
 - Graceful degradation when services are unavailable
 
 ## Metrics and Monitoring
@@ -402,7 +455,7 @@ The service exposes Prometheus metrics for monitoring:
 
 ### Integration
 
-Metrics are exposed at the `/metrics` endpoint and collected by Prometheus.
+Metrics are exposed at the `/metrics` endpoint for collection by Prometheus.
 
 ## Logging Strategy
 
@@ -426,8 +479,7 @@ JSON-formatted logs with standardized fields:
 
 ### Log Transport
 
-In development: Console output
-In production: Console + ELK stack integration
+Currently, logs are output to the console. Future implementation will add ELK stack integration.
 
 ## Deployment Considerations
 
@@ -435,27 +487,20 @@ The service is designed for containerized deployment with Docker:
 
 ### Container Configuration
 
-The `docker-compose.yml` file defines all required services:
+The `docker-compose.yml` file defines the required services:
+- API Server
 - PostgreSQL
-- Redis
 - RabbitMQ
-- ELK stack
-- Prometheus and Grafana
+- Redis
+- Prometheus (optional profile)
+- ELK stack (optional profile, planned for future)
 
 ### Resource Requirements
 
-Recommended minimum resources:
+Recommended minimum resources for current implementation:
 - API Server: 256MB RAM
-- Worker: 256MB RAM per worker
 - Database: 1GB RAM
-- Redis: 512MB RAM
 - RabbitMQ: 512MB RAM
-
-### Scaling Approach
-
-- Horizontal scaling of API servers
-- Horizontal scaling of workers
-- Vertical scaling of database and message queue
 
 ## Code Style and Patterns
 
@@ -464,10 +509,6 @@ The codebase follows these patterns and conventions:
 ### Asynchronous Handling
 
 Async/await is used throughout the codebase for asynchronous operations.
-
-### Dependency Injection
-
-External dependencies are passed to modules that need them, promoting testability.
 
 ### Error Handling
 
@@ -483,27 +524,21 @@ Environment-based configuration with sensible defaults.
 
 ## Security Considerations
 
-The service implements several security measures:
+The service implements several basic security measures:
 
 ### API Security
 
 - Helmet.js for HTTP security headers
 - CORS configuration
-- Input validation on all endpoints
+- Input validation on key endpoints
 
 ### Authentication
 
-The code is prepared for authentication but actual implementation depends on integration requirements.
-
-### Data Security
-
-- Database credentials stored in environment variables
-- Connection strings never logged
-- Proper error handling to prevent information leakage
+Basic authentication for WebSocket connections. More robust authentication is planned for future implementation.
 
 ## Testing Approach
 
-Though tests are not included in the current codebase, the architecture supports:
+Test suite is planned for future implementation. The current architecture supports:
 
 ### Unit Testing
 
@@ -516,18 +551,13 @@ Though tests are not included in the current codebase, the architecture supports
 - Database integration testing
 - Message queue integration testing
 
-### Load Testing
-
-- Simulating high notification throughput
-- WebSocket connection stress testing
-
 ## Development Workflow
 
 ### Local Development
 
 1. Start dependencies with Docker Compose:
    ```bash
-   docker-compose up -d postgres redis rabbitmq
+   docker-compose up -d postgres rabbitmq
    ```
 
 2. Run the application in development mode:
@@ -540,12 +570,6 @@ Though tests are not included in the current codebase, the architecture supports
 - Use standard Node.js debugging via `--inspect`
 - Console logs are formatted for readability in development
 
-### CI/CD Considerations
+## Roadmap and Future Enhancements
 
-A typical CI/CD pipeline would include:
-1. Code linting
-2. Unit tests
-3. Integration tests
-4. Docker image building
-5. Deployment to staging
-6. Deployment to production
+Please refer to the [Implementation Status](IMPLEMENTATION_STATUS.md) document for details on planned enhancements and roadmap.

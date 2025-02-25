@@ -4,6 +4,10 @@
 
 This document provides detailed information about the Push Notification Service API, which allows you to manage users, devices, and send notifications through various channels.
 
+**Implementation Status Legend**:
+- ✅ Implemented - Available in current version
+- 🔄 Planned - Planned for future implementation
+
 ## Base URL
 
 ```
@@ -17,19 +21,20 @@ http://localhost:3000/api
 
 ## Authentication
 
-All API requests must include an API key in the header:
+> **Status: 🔄 Planned**
 
+Authentication will be implemented in a future version. Currently, all endpoints can be accessed without authentication.
+
+Future implementation will include API key authentication:
 ```
 X-API-Key: your_api_key_here
 ```
-
-> Note: The authentication mechanism can be customized based on your requirements.
 
 ## API Endpoints
 
 ### User Management
 
-#### Create User
+#### Create User ✅
 
 Creates a new user in the system.
 
@@ -38,9 +43,7 @@ Creates a new user in the system.
 **Request Body:**
 ```json
 {
-  "name": "John Doe",
-  "email": "john.doe@example.com",
-  "phone": "+1234567890"
+  "email": "john.doe@example.com"
 }
 ```
 
@@ -48,19 +51,16 @@ Creates a new user in the system.
 ```json
 {
   "id": 1,
-  "name": "John Doe",
   "email": "john.doe@example.com",
-  "phone": "+1234567890",
   "created_at": "2023-05-01T12:00:00Z"
 }
 ```
 
 **Error Responses:**
 - `400 Bad Request`: Missing required fields
-- `409 Conflict`: Email or phone already exists
 - `500 Internal Server Error`: Server error
 
-#### Get All Users
+#### Get All Users ✅
 
 Retrieves a list of all users.
 
@@ -71,16 +71,12 @@ Retrieves a list of all users.
 [
   {
     "id": 1,
-    "name": "John Doe",
     "email": "john.doe@example.com",
-    "phone": "+1234567890",
     "created_at": "2023-05-01T12:00:00Z"
   },
   {
     "id": 2,
-    "name": "Jane Smith",
     "email": "jane.smith@example.com",
-    "phone": "+1987654321",
     "created_at": "2023-05-02T10:30:00Z"
   }
 ]
@@ -89,7 +85,7 @@ Retrieves a list of all users.
 **Error Responses:**
 - `500 Internal Server Error`: Server error
 
-#### Get User by ID
+#### Get User by ID ✅
 
 Retrieves a specific user by their ID.
 
@@ -102,9 +98,7 @@ Retrieves a specific user by their ID.
 ```json
 {
   "id": 1,
-  "name": "John Doe",
   "email": "john.doe@example.com",
-  "phone": "+1234567890",
   "created_at": "2023-05-01T12:00:00Z"
 }
 ```
@@ -113,9 +107,9 @@ Retrieves a specific user by their ID.
 - `404 Not Found`: User not found
 - `500 Internal Server Error`: Server error
 
-#### Update User
+#### Update User 🔄
 
-Updates an existing user.
+Updates an existing user (planned for future implementation).
 
 **Endpoint:** `PUT /users/:id`
 
@@ -125,8 +119,7 @@ Updates an existing user.
 **Request Body:**
 ```json
 {
-  "name": "John Doe Updated",
-  "phone": "+1234567899"
+  "email": "john.updated@example.com"
 }
 ```
 
@@ -134,9 +127,7 @@ Updates an existing user.
 ```json
 {
   "id": 1,
-  "name": "John Doe Updated",
-  "email": "john.doe@example.com",
-  "phone": "+1234567899",
+  "email": "john.updated@example.com",
   "updated_at": "2023-05-05T14:20:00Z",
   "created_at": "2023-05-01T12:00:00Z"
 }
@@ -147,9 +138,9 @@ Updates an existing user.
 - `404 Not Found`: User not found
 - `500 Internal Server Error`: Server error
 
-#### Delete User
+#### Delete User 🔄
 
-Deletes a user from the system.
+Deletes a user from the system (planned for future implementation).
 
 **Endpoint:** `DELETE /users/:id`
 
@@ -164,7 +155,7 @@ Deletes a user from the system.
 
 ### Device Management
 
-#### Register Device
+#### Register Device ✅
 
 Registers a new device for a user.
 
@@ -197,7 +188,7 @@ Registers a new device for a user.
 - `404 Not Found`: User not found
 - `500 Internal Server Error`: Server error
 
-#### Get User's Devices
+#### Get User's Devices ✅
 
 Retrieves all devices registered for a specific user.
 
@@ -230,9 +221,9 @@ Retrieves all devices registered for a specific user.
 - `404 Not Found`: User not found
 - `500 Internal Server Error`: Server error
 
-#### Get Device by ID
+#### Get Device by ID 🔄
 
-Retrieves a specific device.
+Retrieves a specific device (planned for future implementation).
 
 **Endpoint:** `GET /users/:userId/devices/:deviceId`
 
@@ -255,9 +246,9 @@ Retrieves a specific device.
 - `404 Not Found`: User or device not found
 - `500 Internal Server Error`: Server error
 
-#### Update Device
+#### Update Device 🔄
 
-Updates an existing device.
+Updates an existing device (planned for future implementation).
 
 **Endpoint:** `PUT /users/:userId/devices/:deviceId`
 
@@ -288,7 +279,7 @@ Updates an existing device.
 - `404 Not Found`: User or device not found
 - `500 Internal Server Error`: Server error
 
-#### Unregister Device
+#### Unregister Device ✅
 
 Removes a device from the system.
 
@@ -306,7 +297,7 @@ Removes a device from the system.
 
 ### Notification Management
 
-#### Send Immediate Notification
+#### Send Immediate Notification ✅
 
 Sends a notification immediately to a user.
 
@@ -350,9 +341,9 @@ Sends a notification immediately to a user.
 - `404 Not Found`: User not found
 - `500 Internal Server Error`: Server error
 
-#### Schedule Notification
+#### Schedule Notification 🔄
 
-Schedules a notification to be sent at a future time.
+Schedules a notification to be sent at a future time (planned for future implementation).
 
 **Endpoint:** `POST /notifications/schedule`
 
@@ -392,9 +383,9 @@ Schedules a notification to be sent at a future time.
 - `404 Not Found`: User not found
 - `500 Internal Server Error`: Server error
 
-#### Broadcast Notification
+#### Broadcast Notification 🔄
 
-Sends a notification to all users in the system.
+Sends a notification to all users in the system (planned for future implementation).
 
 **Endpoint:** `POST /notifications/broadcast`
 
@@ -430,7 +421,7 @@ Sends a notification to all users in the system.
 - `400 Bad Request`: Missing required fields
 - `500 Internal Server Error`: Server error
 
-#### Get User's Notifications
+#### Get User's Notifications ✅
 
 Retrieves all notifications for a specific user.
 
@@ -439,57 +430,28 @@ Retrieves all notifications for a specific user.
 **URL Parameters:**
 - `userId`: User ID (required)
 
-**Query Parameters:**
-- `limit`: Maximum number of notifications to return (default: 20)
-- `offset`: Number of notifications to skip (default: 0)
-- `status`: Filter by status (optional, e.g., "delivered", "failed", "pending")
-
 **Response:** `200 OK`
 ```json
-{
-  "total": 2,
-  "limit": 20,
-  "offset": 0,
-  "notifications": [
-    {
-      "id": 2,
-      "user_id": 1,
-      "title": "Meeting Reminder",
-      "body": "Your meeting with the team starts in 15 minutes",
-      "data": {
-        "meeting_id": 789,
-        "meeting_link": "https://meet.example.com/abc123"
-      },
-      "status": "scheduled",
-      "scheduled_time": "2023-05-10T15:45:00Z",
-      "created_at": "2023-05-05T14:00:00Z"
-    },
-    {
-      "id": 1,
-      "user_id": 1,
-      "title": "New Message",
-      "body": "You have received a new message from Jane",
-      "data": {
-        "message_id": 123,
-        "sender_id": 2,
-        "sender_name": "Jane Smith",
-        "thread_id": 456
-      },
-      "status": "delivered",
-      "sent_at": "2023-05-05T13:40:10Z",
-      "created_at": "2023-05-05T13:40:00Z"
-    }
-  ]
-}
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "title": "New Message",
+    "body": "You have received a new message from Jane",
+    "status": "delivered",
+    "sent_at": "2023-05-05T13:40:10Z",
+    "created_at": "2023-05-05T13:40:00Z"
+  }
+]
 ```
 
 **Error Responses:**
 - `404 Not Found`: User not found
 - `500 Internal Server Error`: Server error
 
-#### Get Notification by ID
+#### Get Notification by ID 🔄
 
-Retrieves a specific notification.
+Retrieves a specific notification (planned for future implementation).
 
 **Endpoint:** `GET /notifications/:id`
 
@@ -519,9 +481,9 @@ Retrieves a specific notification.
 - `404 Not Found`: Notification not found
 - `500 Internal Server Error`: Server error
 
-#### Cancel Scheduled Notification
+#### Cancel Scheduled Notification 🔄
 
-Cancels a scheduled notification that hasn't been sent yet.
+Cancels a scheduled notification that hasn't been sent yet (planned for future implementation).
 
 **Endpoint:** `DELETE /notifications/:id`
 
@@ -535,11 +497,15 @@ Cancels a scheduled notification that hasn't been sent yet.
 - `409 Conflict`: Notification already sent
 - `500 Internal Server Error`: Server error
 
-### User Preferences
+### User Preferences 🔄
 
-#### Set User Preferences
+> **Status: 🔄 Planned**
 
-Sets notification preferences for a user.
+User preference endpoints are planned for future implementation.
+
+#### Set User Preferences 🔄
+
+Sets notification preferences for a user (planned for future implementation).
 
 **Endpoint:** `POST /users/:userId/preferences`
 
@@ -597,9 +563,9 @@ Sets notification preferences for a user.
 - `404 Not Found`: User not found
 - `500 Internal Server Error`: Server error
 
-#### Get User Preferences
+#### Get User Preferences 🔄
 
-Retrieves notification preferences for a user.
+Retrieves notification preferences for a user (planned for future implementation).
 
 **Endpoint:** `GET /users/:userId/preferences`
 
@@ -635,21 +601,21 @@ Retrieves notification preferences for a user.
 - `404 Not Found`: User or preferences not found
 - `500 Internal Server Error`: Server error
 
-## WebSocket API
+## WebSocket API ✅
 
-The Push Notification Service also provides a WebSocket API for real-time notifications. This is especially useful for web applications that need to display notifications instantly without polling.
+The Push Notification Service provides a WebSocket API for real-time notifications.
 
 ### Connection
 
 Connect to the WebSocket server:
 
 ```
-ws://your-domain.com/socket.io
+ws://your-domain.com
 ```
 
 For local development:
 ```
-ws://localhost:3000/socket.io
+ws://localhost:3000
 ```
 
 ### Authentication
@@ -681,12 +647,6 @@ socket.on('notification', (notification) => {
   console.log('New notification received', notification);
   // Handle the notification in your UI
 });
-
-// For broadcast messages to all users
-socket.on('broadcast', (notification) => {
-  console.log('Broadcast notification received', notification);
-  // Handle the broadcast notification in your UI
-});
 ```
 
 ### Disconnection
@@ -716,82 +676,24 @@ The API may return the following error codes:
 | 403 | FORBIDDEN | The authenticated user doesn't have permission |
 | 404 | NOT_FOUND | The requested resource was not found |
 | 409 | CONFLICT | The request conflicts with the current state of the server |
-| 422 | VALIDATION_ERROR | The request data failed validation |
-| 429 | RATE_LIMITED | Too many requests, try again later |
 | 500 | SERVER_ERROR | An internal server error occurred |
 
 Error response format:
 
 ```json
 {
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Device token is required",
-    "details": {
-      "device_token": "This field is required"
-    }
-  }
+  "error": "Error message"
 }
 ```
 
-## Rate Limiting
+## Rate Limiting 🔄
 
-The API implements rate limiting to prevent abuse. The current limits are:
+> **Status: 🔄 Planned**
 
-- 100 requests per minute per API key for general endpoints
-- 10 requests per minute per API key for notification sending endpoints
+Rate limiting is planned for future implementation.
 
-When rate limited, the API will return a `429 Too Many Requests` response with a `Retry-After` header indicating when you can resume making requests.
+## Webhook Integration 🔄
 
-## Webhook Integration
+> **Status: 🔄 Planned**
 
-The Push Notification Service can send webhook notifications for various events. To set up webhooks:
-
-1. Register a webhook endpoint:
-
-**Endpoint:** `POST /webhooks`
-
-**Request Body:**
-```json
-{
-  "url": "https://your-app.com/webhook/notifications",
-  "events": [
-    "notification.sent",
-    "notification.failed",
-    "notification.clicked"
-  ],
-  "secret": "your-webhook-secret"
-}
-```
-
-**Response:** `201 Created`
-```json
-{
-  "id": "wh_123abc",
-  "url": "https://your-app.com/webhook/notifications",
-  "events": [
-    "notification.sent",
-    "notification.failed",
-    "notification.clicked"
-  ],
-  "created_at": "2023-05-07T09:30:00Z"
-}
-```
-
-2. Webhook payload format:
-
-```json
-{
-  "event": "notification.sent",
-  "timestamp": "2023-05-07T09:35:00Z",
-  "data": {
-    "notification_id": 1,
-    "user_id": 1,
-    "title": "New Message",
-    "status": "delivered",
-    "sent_at": "2023-05-07T09:35:00Z"
-  }
-}
-```
-
-3. Verify webhook authenticity using the signature in the `X-Webhook-Signature` header.
+Webhook integration is planned for future implementation.
