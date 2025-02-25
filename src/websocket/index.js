@@ -67,9 +67,16 @@ const setupWebsocket = (server) => {
 
             // Clear user's online status if this was an authenticated socket
             if (socket.userId) {
-                await redisClient.del(`user:${userId}:online`);
-                await redisClient.del(`user:${userId}:socket`);
-                logger.info(`User ${socket.userId} went offline`);
+                try {
+                    const userId = socket.userId;
+                    if (redisClient.isOpen) {
+                        await redisClient.del(`user:${userId}:online`);
+                        await redisClient.del(`user:${userId}:socket`);
+                    }
+                    logger.info(`User ${socket.userId} went offline`);
+                } catch (error) {
+                    logger.warn(`Could not update Redis for disconnected user: ${error.message}`);
+                }
             }
         });
     });
@@ -110,8 +117,6 @@ const broadcastNotification = (notification) => {
     }
 };
 
-module.exports = {
-    setupWebsocket,
-    sendNotificationToUser,
-    broadcastNotification
-};
+module.exports = setupWebsocket;
+module.exports.sendNotificationToUser = sendNotificationToUser;
+module.exports.broadcastNotification = broadcastNotification;

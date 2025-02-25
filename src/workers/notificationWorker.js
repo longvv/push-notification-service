@@ -3,7 +3,7 @@ const { consumeMessages } = require('../config/rabbitmq');
 const { User, Device, Notification } = require('../models');
 const logger = require('../config/logging');
 const { metrics } = require('../config/metrics');
-const { sendNotificationToUser } = require('../websocket');
+const websocket = require('../websocket');
 
 // Process notifications from immediate queue
 const processImmediateNotifications = async () => {
@@ -38,7 +38,7 @@ const processImmediateNotifications = async () => {
       // For now, we'll just simulate successful delivery
       
       // Send real-time notification via WebSocket
-      const socketSent = await sendNotificationToUser(user_id, {
+      const socketSent = await websocket.sendNotificationToUser(user_id, {
         id: notification_id,
         title,
         body,

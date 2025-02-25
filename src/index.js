@@ -37,7 +37,8 @@ const startServer = async () => {
     });
     
     // Thiết lập WebSocket server
-    setupWebsocket(server);
+    const io = setupWebsocket(server);
+    logger.info('WebSocket server initialized');
     
   } catch (error) {
     logger.error('Failed to start server:', error);
