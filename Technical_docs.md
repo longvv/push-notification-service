@@ -4,7 +4,7 @@ This document provides detailed technical documentation for the Push Notificatio
 
 ## Current Implementation Status
 
-For a detailed overview of which features are implemented vs. planned, please refer to the [Implementation Status](IMPLEMENTATION_STATUS.md) document.
+For a detailed overview of which features are implemented vs. planned, please refer to the [Implementation Status](https://github.com/longvv/push-notification-service/blob/main/implementation-status.md) document.
 
 ## Project Structure
 
