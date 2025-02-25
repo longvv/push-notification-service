@@ -260,7 +260,7 @@ The service uses Winston for logging with console output in development. Future 
 
 | Variable          | Description                   | Default     |
 |-------------------|-------------------------------|-------------|
-| PORT              | API server port               | 3000        |
+| PORT              | API server port               | 3001        |
 | NODE_ENV          | Environment                   | development |
 | DB_HOST           | PostgreSQL host               | postgres    |
 | DB_PORT           | PostgreSQL port               | 5432        |
