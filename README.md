@@ -5,21 +5,21 @@ A scalable and robust service for managing and delivering push notifications acr
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [System Architecture](#system-architecture)
-3. [Setup & Installation](#setup--installation)
-4. [Services & Components](#services--components)
-5. [API Reference](#api-reference)
-6. [Webhooks & Events](#webhooks--events)
-7. [Monitoring & Logging](#monitoring--logging)
-8. [Data Schema](#data-schema)
-9. [Scaling Considerations](#scaling-considerations)
-10. [Configuration Guide](#configuration-guide)
+2. [Features](#features)
+3. [System Architecture](#system-architecture)
+4. [Documentation Guide](#documentation-guide)
+5. [Getting Started](#getting-started)
+6. [API Reference](#api-reference)
+7. [WebSocket Interface](#websocket-interface)
+8. [Monitoring & Logging](#monitoring--logging)
+9. [Configuration](#configuration)
+10. [Contributing](#contributing)
 
 ## Overview
 
 The Push Notification Service is a microservice-based platform designed to handle high-volume notification delivery across multiple channels including mobile push, web push, email, and SMS. It provides real-time delivery, scheduling capabilities, and detailed tracking of notification status.
 
-### Key Features
+## Features
 
 - **Multi-channel delivery** - Send notifications via mobile push, WebSockets, and future expansion to email and SMS
 - **Real-time notifications** - WebSocket support for instant delivery
@@ -33,21 +33,6 @@ The Push Notification Service is a microservice-based platform designed to handl
 ## System Architecture
 
 The Push Notification Service follows a microservice architecture with the following components:
-
-### Infrastructure Components
-
-- **PostgreSQL**: Primary database for storing user data, device information, and notification history
-- **Redis**: Used for caching, rate limiting, and managing WebSocket connections
-- **RabbitMQ**: Message broker for managing notification queues
-- **ELK Stack**: Elasticsearch, Logstash, and Kibana for log management
-- **Prometheus & Grafana**: For metrics collection and visualization
-
-### Service Components
-
-- **API Server**: RESTful API for managing users, devices, and notifications
-- **WebSocket Server**: Real-time notification delivery
-- **Notification Workers**: Process and send notifications from queues
-- **Scheduler**: Manages scheduled notifications
 
 ### Architecture Diagram
 
@@ -74,7 +59,33 @@ The Push Notification Service follows a microservice architecture with the follo
 └─────────────┘
 ```
 
-## Setup & Installation
+### Components
+
+#### Infrastructure Components
+
+- **PostgreSQL**: Primary database for storing user data, device information, and notification history
+- **Redis**: Used for caching, rate limiting, and managing WebSocket connections
+- **RabbitMQ**: Message broker for managing notification queues
+- **ELK Stack**: Elasticsearch, Logstash, and Kibana for log management
+- **Prometheus & Grafana**: For metrics collection and visualization
+
+#### Service Components
+
+- **API Server**: RESTful API for managing users, devices, and notifications
+- **WebSocket Server**: Real-time notification delivery
+- **Notification Workers**: Process and send notifications from queues
+- **Scheduler**: Manages scheduled notifications
+
+## Documentation Guide
+
+The documentation for this project is organized into several documents to help you understand and use the system effectively:
+
+1. **README.md** (this file) - Overview and gateway to other documentation
+2. **[Setup Guide](Setup_and_configuration_guide.md)** - Detailed installation and configuration instructions
+3. **[API Documentation](API_docs.md)** - Complete API reference for all endpoints
+4. **[Technical Documentation](Technical_docs.md)** - Detailed technical implementation details
+
+## Getting Started
 
 ### Prerequisites
 
@@ -82,7 +93,7 @@ The Push Notification Service follows a microservice architecture with the follo
 - Node.js (v16+) for local development
 - PostgreSQL client (optional, for direct DB access)
 
-### Installation Steps
+### Quick Start
 
 1. Clone the repository:
    ```bash
@@ -101,12 +112,7 @@ The Push Notification Service follows a microservice architecture with the follo
    docker-compose up -d
    ```
 
-4. Initialize the database (if needed):
-   ```bash
-   # Database initialization happens automatically via init scripts
-   ```
-
-5. Verify the installation:
+4. Verify the installation:
    ```bash
    # Check if all services are running
    docker-compose ps
@@ -115,72 +121,11 @@ The Push Notification Service follows a microservice architecture with the follo
    curl http://localhost:3000/api/healthcheck
    ```
 
-### Development Setup
-
-For local development:
-
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-2. Start services in development mode:
-   ```bash
-   npm run dev
-   ```
-
-## Services & Components
-
-### API Server
-
-The API server provides RESTful endpoints for:
-- User management
-- Device registration
-- Notification sending and management
-- Webhook configurations
-
-### WebSocket Server
-
-Enables real-time bidirectional communication between the server and clients:
-- Authenticates clients
-- Delivers notifications in real-time
-- Handles client presence (online/offline status)
-
-### Notification Workers
-
-Background processes that:
-- Consume messages from RabbitMQ queues
-- Send notifications to appropriate delivery channels
-- Handle retries for failed deliveries
-- Update notification status in the database
-
-### Caching Layer (Redis)
-
-Used for:
-- Temporary data storage
-- Rate limiting
-- WebSocket session management
-- User presence tracking
-
-### Message Queue (RabbitMQ)
-
-Manages:
-- Immediate notification queue
-- Scheduled notification queue
-- Dead-letter queue for failed notifications
-
-### Monitoring Stack
-
-- **Prometheus**: Collects metrics
-- **Grafana**: Visualizes metrics with customizable dashboards
-
-### Logging Stack
-
-- **Elasticsearch**: Stores logs
-- **Logstash**: Processes and forwards logs
-- **Kibana**: Visualizes and searches logs
+For more detailed setup instructions, refer to the [Setup Guide](Setup_and_configuration_guide.md).
 
 ## API Reference
+
+The service provides a RESTful API for managing users, devices, and notifications. Below are some key endpoints:
 
 ### Authentication
 
@@ -190,7 +135,7 @@ All API requests require authentication using API keys:
 Header: X-API-Key: your_api_key_here
 ```
 
-### Users
+### Sample Endpoints
 
 #### Create User
 
@@ -206,88 +151,6 @@ Request:
   "phone": "+1234567890"
 }
 ```
-
-Response:
-```json
-{
-  "id": 1,
-  "email": "user@example.com",
-  "name": "John Doe",
-  "phone": "+1234567890",
-  "created_at": "2023-04-28T12:00:00Z"
-}
-```
-
-#### Get User
-
-```
-GET /api/users/:id
-```
-
-Response:
-```json
-{
-  "id": 1,
-  "email": "user@example.com",
-  "name": "John Doe",
-  "phone": "+1234567890",
-  "created_at": "2023-04-28T12:00:00Z"
-}
-```
-
-### Devices
-
-#### Register Device
-
-```
-POST /api/users/:userId/devices
-```
-
-Request:
-```json
-{
-  "device_token": "fcm-token-here",
-  "device_type": "android" // or "ios", "web"
-}
-```
-
-Response:
-```json
-{
-  "id": 1,
-  "user_id": 1,
-  "device_token": "fcm-token-here",
-  "device_type": "android",
-  "created_at": "2023-04-28T12:05:00Z"
-}
-```
-
-#### Get User Devices
-
-```
-GET /api/users/:userId/devices
-```
-
-Response:
-```json
-[
-  {
-    "id": 1,
-    "user_id": 1,
-    "device_token": "fcm-token-here",
-    "device_type": "android",
-    "created_at": "2023-04-28T12:05:00Z"
-  }
-]
-```
-
-#### Unregister Device
-
-```
-DELETE /api/users/:userId/devices/:deviceId
-```
-
-### Notifications
 
 #### Send Notification
 
@@ -308,112 +171,42 @@ Request:
 }
 ```
 
-Response:
-```json
-{
-  "id": 1,
-  "user_id": 1,
-  "title": "New Message",
-  "body": "You have received a new message",
-  "data": {
-    "message_id": 123,
-    "sender": "other_user"
-  },
-  "status": "pending",
-  "created_at": "2023-04-28T12:10:00Z"
-}
-```
+For complete API documentation, refer to the [API Documentation](API_docs.md).
 
-#### Schedule Notification
+## WebSocket Interface
+
+The service provides a WebSocket interface for real-time notifications.
+
+### Connection
+
+Connect to the WebSocket server:
 
 ```
-POST /api/notifications/schedule
+ws://your-domain.com/socket.io
 ```
 
-Request:
-```json
-{
-  "user_id": 1,
-  "title": "Appointment Reminder",
-  "body": "Your appointment is tomorrow",
-  "data": {
-    "appointment_id": 456
-  },
-  "scheduled_time": "2023-04-29T09:00:00Z"
-}
+### Authentication
+
+After connecting, authenticate the WebSocket connection:
+
+```javascript
+// Client-side example
+const socket = io('http://localhost:3000');
+socket.emit('authenticate', { userId: 1 });
 ```
 
-Response:
-```json
-{
-  "id": 2,
-  "user_id": 1,
-  "title": "Appointment Reminder",
-  "body": "Your appointment is tomorrow",
-  "data": {
-    "appointment_id": 456
-  },
-  "status": "scheduled",
-  "scheduled_time": "2023-04-29T09:00:00Z",
-  "created_at": "2023-04-28T12:15:00Z"
-}
+### Receiving Notifications
+
+Listen for notification events:
+
+```javascript
+// Client-side example
+socket.on('notification', (notification) => {
+  console.log('New notification received', notification);
+});
 ```
 
-#### Get User Notifications
-
-```
-GET /api/notifications/user/:userId
-```
-
-Response:
-```json
-[
-  {
-    "id": 1,
-    "user_id": 1,
-    "title": "New Message",
-    "body": "You have received a new message",
-    "data": {
-      "message_id": 123,
-      "sender": "other_user"
-    },
-    "status": "delivered",
-    "sent_at": "2023-04-28T12:10:05Z",
-    "created_at": "2023-04-28T12:10:00Z"
-  }
-]
-```
-
-## Webhooks & Events
-
-The service can send webhook notifications for the following events:
-
-- `notification.sent`: When a notification is successfully sent
-- `notification.failed`: When a notification fails to send
-- `notification.clicked`: When a user clicks/opens a notification
-- `device.registered`: When a new device is registered
-- `device.unregistered`: When a device is unregistered
-
-### Webhook Format
-
-```json
-{
-  "event": "notification.sent",
-  "timestamp": "2023-04-28T12:10:05Z",
-  "data": {
-    "notification_id": 1,
-    "user_id": 1,
-    "status": "delivered"
-  }
-}
-```
-
-### WebSocket Events
-
-Clients can listen for the following events:
-
-- `notification`: Received when a notification is sent to the user
-- `broadcast`: Received for general announcements to all users
+For more details, see the WebSocket section in the [API Documentation](API_docs.md).
 
 ## Monitoring & Logging
 
@@ -425,88 +218,12 @@ Prometheus metrics are available at `/metrics` endpoint:
 - `notification_latency_seconds`: Histogram for notification processing latency
 - `active_websocket_connections`: Gauge for active WebSocket connections
 
-### Grafana Dashboards
+### Dashboards
 
-Grafana is available at `http://localhost:3000` with pre-configured dashboards:
-- Notification Delivery Dashboard
-- System Health Dashboard
-- WebSocket Connections Dashboard
+- Grafana is available at `http://localhost:3000` with pre-configured dashboards
+- Kibana is available at `http://localhost:5601` for log exploration
 
-### Log Access
-
-Kibana is available at `http://localhost:5601` for log exploration.
-
-## Data Schema
-
-### Database Tables
-
-#### Users
-
-| Column    | Type          | Description       |
-|-----------|---------------|-------------------|
-| id        | SERIAL (PK)   | Unique identifier |
-| name      | VARCHAR(255)  | User's name       |
-| email     | VARCHAR(255)  | User's email      |
-| phone     | VARCHAR(255)  | User's phone      |
-| created_at| TIMESTAMP     | Creation timestamp|
-
-#### Devices
-
-| Column       | Type         | Description         |
-|--------------|--------------|---------------------|
-| id           | SERIAL (PK)  | Unique identifier   |
-| user_id      | INTEGER (FK) | Reference to user   |
-| device_token | TEXT         | Device token        |
-| device_type  | VARCHAR(50)  | Device type         |
-| created_at   | TIMESTAMP    | Creation timestamp  |
-
-#### Notifications
-
-| Column     | Type          | Description         |
-|------------|---------------|---------------------|
-| id         | SERIAL (PK)   | Unique identifier   |
-| user_id    | INTEGER (FK)  | Reference to user   |
-| title      | VARCHAR(255)  | Notification title  |
-| body       | TEXT          | Notification body   |
-| data       | JSONB         | Additional data     |
-| status     | VARCHAR(50)   | Delivery status     |
-| sent_at    | TIMESTAMP     | Sent timestamp      |
-| created_at | TIMESTAMP     | Creation timestamp  |
-
-#### Additional Tables
-
-The schema also includes tables for:
-- `user_preferences`: User notification preferences
-- `sent_notifications`: Detailed delivery tracking
-- `failed_notifications`: Track failures and retries
-- `notification_logs`: Audit logs for notifications
-- `email_logs`, `sms_logs`, `push_notification_logs`: Channel-specific logs
-
-## Scaling Considerations
-
-The service is designed to scale horizontally:
-
-### API Scaling
-
-- Deploy multiple API server instances behind a load balancer
-- Scale based on CPU/memory usage or request rate
-
-### Worker Scaling
-
-- Multiple worker instances can consume from the same queues
-- Workers can be scaled independently based on queue length
-
-### Database Scaling
-
-- Consider read replicas for high-read scenarios
-- Implement database sharding for very large deployments
-
-### Caching Strategy
-
-- Use Redis for frequent data access
-- Implement cache invalidation strategies
-
-## Configuration Guide
+## Configuration
 
 ### Environment Variables
 
@@ -527,40 +244,23 @@ The service is designed to scale horizontally:
 | RABBITMQ_PASSWORD | RabbitMQ password             | admin123    |
 | LOG_LEVEL         | Logging level                 | info        |
 
-### Docker Compose Configuration
+For more configuration options, refer to the [Setup Guide](Setup_and_configuration_guide.md).
 
-The `docker-compose.yml` file defines all required services:
+## Contributing
 
-- PostgreSQL for data storage
-- Redis for caching
-- RabbitMQ for message queuing
-- ELK stack for logging
-- Prometheus and Grafana for monitoring
+Contributions are welcome! Please read our contributing guidelines before submitting pull requests.
 
-Each service can be configured via the environment variables or by editing the Docker Compose file directly.
+### Development Setup
 
-### Service Logs
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-View logs for each service:
+2. Start necessary services in development mode:
+   ```bash
+   docker-compose up -d postgres redis rabbitmq
+   npm run dev
+   ```
 
-```bash
-# View logs for specific service
-docker-compose logs -f api
-
-# View logs for all services
-docker-compose logs -f
-```
-
-### Backup & Restore
-
-Database backup:
-
-```bash
-docker-compose exec postgres pg_dump -U admin notification_db > backup.sql
-```
-
-Database restore:
-
-```bash
-cat backup.sql | docker-compose exec -T postgres psql -U admin notification_db
-```
+For more information on development workflow, check the [Technical Documentation](Technical_docs.md).
