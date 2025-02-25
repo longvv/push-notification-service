@@ -6,13 +6,13 @@ This document provides a detailed overview of the current implementation status 
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| API Server | ✅ Implemented | Basic Express server with routes for users, devices, and notifications |
+| API Server | ✅ Implemented | Express server with routes for users, devices, and notifications |
 | Database | ✅ Implemented | PostgreSQL with basic schema |
 | WebSocket Server | ✅ Implemented | Socket.IO integration for real-time notifications |
 | Message Queue | ✅ Implemented | RabbitMQ integration for notification processing |
-| Redis | ⚠️ Partial | Basic integration, not fully utilized |
-| Notification Workers | ✅ Implemented | Basic workers for processing notifications |
-| Monitoring | ⚠️ Partial | Prometheus metrics defined but dashboard not implemented |
+| Redis | ⚠️ Partial | Basic integration, not fully utilized for features beyond presence |
+| Notification Workers | ⚠️ Partial | Immediate notification worker implemented; scheduled notifications partially implemented |
+| Monitoring | ⚠️ Partial | Prometheus metrics defined but dashboard not fully implemented |
 | Logging | ⚠️ Partial | Winston logger implemented but no ELK stack integration |
 | Docker | ✅ Implemented | Docker and Docker Compose for development |
 
@@ -44,7 +44,7 @@ This document provides a detailed overview of the current implementation status 
 |----------|--------|--------|-------|
 | `/api/notifications` | POST | ✅ Implemented | Send an immediate notification |
 | `/api/notifications/user/:userId` | GET | ✅ Implemented | Get notifications for a user |
-| `/api/notifications/schedule` | POST | 🔄 Planned | Schedule a notification for future delivery |
+| `/api/notifications/schedule` | POST | 🔄 Planned | Schedule a notification for future delivery (worker partially implemented) |
 | `/api/notifications/broadcast` | POST | 🔄 Planned | Send to all users |
 | `/api/notifications/:id` | GET | 🔄 Planned | Get a specific notification |
 | `/api/notifications/:id` | DELETE | 🔄 Planned | Cancel a scheduled notification |
@@ -63,37 +63,41 @@ This document provides a detailed overview of the current implementation status 
 | `users` | ✅ Implemented | Basic user information |
 | `devices` | ✅ Implemented | User device registration |
 | `notifications` | ✅ Implemented | Basic notification data |
-| `user_preferences` | 🔄 Planned | For future preference implementation |
-| `sent_notifications` | 🔄 Planned | For tracking sent notifications |
-| `failed_notifications` | 🔄 Planned | For tracking delivery failures |
-| `notification_logs` | 🔄 Planned | For detailed notification lifecycle |
+| `user_preferences` | ⚠️ Schema Only | Table defined but not used in application code |
+| `sent_notifications` | ⚠️ Schema Only | Table defined but not used in application code |
+| `failed_notifications` | ⚠️ Schema Only | Table defined but not used in application code |
+| `notification_logs` | ⚠️ Schema Only | Table defined but not used in application code |
+| `email_logs` | ⚠️ Schema Only | Table defined but not used in application code |
+| `sms_logs` | ⚠️ Schema Only | Table defined but not used in application code |
+| `push_notification_logs` | ⚠️ Schema Only | Table defined but not used in application code |
+| `webhook_logs` | ⚠️ Schema Only | Table defined but not used in application code |
 
 ## Model Implementation
 
 | Model | Status | Notes |
 |-------|--------|-------|
-| `User` | ✅ Implemented | Basic user model |
+| `User` | ⚠️ Partial | Implemented but missing `name` and `phone` fields from database schema |
 | `Device` | ✅ Implemented | User device model |
 | `Notification` | ✅ Implemented | Basic notification model |
-| `UserPreferences` | 🔄 Planned | For future implementation |
-| `SentNotification` | 🔄 Planned | For future implementation |
-| `NotificationLog` | 🔄 Planned | For future implementation |
+| `UserPreferences` | 🔄 Planned | Schema exists but model not implemented |
+| `SentNotification` | 🔄 Planned | Schema exists but model not implemented |
+| `NotificationLog` | 🔄 Planned | Schema exists but model not implemented |
 
 ## Features
 
 | Feature | Status | Notes |
 |---------|--------|-------|
-| User Management | ✅ Implemented | Basic CRUD operations (except update/delete) |
+| User Management | ⚠️ Partial | Basic CRUD operations (except update/delete) |
 | Device Registration | ✅ Implemented | Register and unregister devices |
-| Push Notifications | ✅ Implemented | Basic functionality via WebSocket |
+| Push Notifications | ⚠️ Partial | Basic immediate notification via WebSocket implemented |
 | WebSocket Delivery | ✅ Implemented | Real-time notification delivery |
 | Message Queuing | ✅ Implemented | RabbitMQ integration |
-| Scheduled Notifications | 🔄 Planned | Handler stub exists but not fully implemented |
+| Scheduled Notifications | ⚠️ Partial | Worker exists but API endpoint not implemented |
 | Multi-channel Delivery | 🔄 Planned | Currently WebSocket only, email/SMS planned |
 | Notification Templates | 🔄 Planned | For future implementation |
-| User Preferences | 🔄 Planned | For future implementation |
-| Delivery Tracking | 🔄 Planned | Basic tracking only, detailed tracking planned |
-| Webhook Integration | 🔄 Planned | For future implementation |
+| User Preferences | 🔄 Planned | Schema exists but not implemented |
+| Delivery Tracking | ⚠️ Partial | Basic status tracking only, detailed tracking planned |
+| Webhook Integration | 🔄 Planned | Schema exists but not implemented |
 
 ## Monitoring & Logging
 
@@ -123,15 +127,15 @@ This document provides a detailed overview of the current implementation status 
 
 ### Short-term (Next Release)
 
-1. Complete user management (add update/delete)
-2. Implement scheduled notifications
-3. Add more comprehensive delivery tracking
-4. Improve Redis integration
+1. Fix User model to match database schema (add name and phone fields)
+2. Implement scheduled notifications API endpoint
+3. Create models for user preferences and notification logs
+4. Improve Redis integration for better caching and rate limiting
 
 ### Mid-term
 
 1. Implement multi-channel delivery (email, SMS)
-2. Add user preferences
+2. Add user preferences functionality
 3. Implement notification templates
 4. Complete ELK stack integration
 

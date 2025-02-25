@@ -6,6 +6,7 @@ This document provides detailed information about the Push Notification Service 
 
 **Implementation Status Legend**:
 - ✅ Implemented - Available in current version
+- ⚠️ Partial - Partially implemented with limited functionality
 - 🔄 Planned - Planned for future implementation
 
 ## Base URL
@@ -46,6 +47,8 @@ Creates a new user in the system.
   "email": "john.doe@example.com"
 }
 ```
+
+**Note:** While the database schema includes `name` and `phone` fields, the current API implementation only requires the `email` field.
 
 **Response:** `201 Created`
 ```json
@@ -341,9 +344,11 @@ Sends a notification immediately to a user.
 - `404 Not Found`: User not found
 - `500 Internal Server Error`: Server error
 
-#### Schedule Notification 🔄
+#### Schedule Notification ⚠️
 
-Schedules a notification to be sent at a future time (planned for future implementation).
+Schedules a notification to be sent at a future time. Backend worker is partially implemented, but API endpoint is still planned.
+
+**Status: Partially implemented**
 
 **Endpoint:** `POST /notifications/schedule`
 

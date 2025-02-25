@@ -30,14 +30,14 @@ The current implementation includes:
 ✅ **User and device management** - Registration and lookup functionality  
 ✅ **Basic notification sending** - Immediate notification delivery  
 ✅ **Message queueing** - RabbitMQ integration for notification processing  
-✅ **Basic metrics** - Prometheus integration for system monitoring  
+⚠️ **Scheduled notifications** - Worker implementation exists but API endpoint is not yet implemented  
+⚠️ **Basic metrics** - Prometheus integration for system monitoring (dashboard not complete)  
 ✅ **Containerization** - Docker and Docker Compose setup  
 ✅ **Test data generation** - Database seeder for development  
 
 **Planned for future releases:**
 
 🔄 Multi-channel delivery (email, SMS)  
-🔄 Notification scheduling  
 🔄 Comprehensive delivery tracking  
 🔄 User preferences  
 🔄 Notification templates  
@@ -45,14 +45,18 @@ The current implementation includes:
 🔄 Advanced metrics and dashboards  
 🔄 Full ELK stack integration  
 
+For detailed status information, see the [Implementation Status](IMPLEMENTATION_STATUS.md) document.
+
 ## Features
 
 Current features:
 
 - **Real-time notifications** - WebSocket support for instant delivery
 - **Message queueing** - RabbitMQ for reliable message delivery
-- **Basic monitoring** - Prometheus integration for system monitoring
+- **Basic monitoring** - Prometheus integration for system metrics
 - **Centralized logging** - Winston logger for aggregating logs
+- **User management** - Basic API for user management
+- **Device management** - Register/unregister devices for notifications
 
 Features planned for future releases:
 
@@ -101,9 +105,14 @@ The Push Notification Service follows a microservice architecture with the follo
 - **WebSocket Server**: Real-time notification delivery
 - **Notification Workers**: Process and send notifications from queues
 
+#### Partially Implemented
+
+- **Redis**: For basic user presence and WebSocket connection tracking
+- **Prometheus**: For basic metrics collection
+
 #### Planned for Future Implementation
 
-- **Redis**: For caching, rate limiting, and managing WebSocket connections (partially implemented)
+- **Full Redis Integration**: Enhanced caching, rate limiting, and managing WebSocket connections
 - **ELK Stack**: Elasticsearch, Logstash, and Kibana for log management
 - **Grafana**: For metrics visualization
 

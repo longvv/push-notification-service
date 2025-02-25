@@ -34,7 +34,7 @@ push-notification-service/
 │   │   ├── device.js        # Device model
 │   │   ├── index.js         # Model exports
 │   │   ├── notification.js  # Notification model
-│   │   └── user.js          # User model
+│   │   └── user.js          # User model (NEEDS UPDATE to match schema)
 │   ├── websocket/           # WebSocket implementation
 │   │   └── index.js         # WebSocket server
 │   ├── workers/             # Background workers
@@ -61,6 +61,12 @@ The API server is built using Express.js and provides RESTful endpoints for inte
 - Middleware configuration (`index.js`)
 - Error handling and logging
 - Prometheus metrics endpoint (`/metrics`)
+
+#### Current Implementation Status:
+- ✅ Core route handling
+- ✅ Basic CRUD operations for users, devices, and notifications
+- ✅ Error handling middleware
+- ⚠️ Missing some endpoints like notification scheduling, user preferences
 
 #### API Server Initialization:
 
@@ -128,6 +134,11 @@ The application uses Sequelize ORM to interact with PostgreSQL. The models repre
 - **User**: Represents application users
 - **Device**: Represents user devices for notification delivery
 - **Notification**: Stores notification data and delivery status
+
+#### Model Implementation Issues:
+
+- **User Model**: Missing `name` and `phone` fields that exist in the database schema
+- **Missing Models**: Several tables defined in the database schema don't have corresponding model files (UserPreferences, SentNotifications, etc.)
 
 #### Model Definition Example:
 
@@ -261,7 +272,8 @@ Workers process messages from RabbitMQ queues to deliver notifications to users.
 
 #### Key Features:
 
-- Immediate notification processing
+- Immediate notification processing (fully implemented)
+- Scheduled notification processing (partially implemented)
 - Error handling
 - WebSocket notification delivery
 - Metrics tracking
@@ -333,13 +345,18 @@ Configuration modules handle connections to external services and define their u
 - **logging.js**: Winston logger configuration
 - **metrics.js**: Prometheus metrics definition
 
+#### Implementation Issues:
+
+- **database.js**: Uses hardcoded configuration values instead of environment variables
+- **redis.js**: Limited functionality, not fully integrated with caching and rate limiting features
+
 ## Database Schema
 
 The current database schema is defined in the `init-scripts/01-init.sql` file and implemented through Sequelize models.
 
-### Currently Implemented Tables:
+### Schema vs. Model Discrepancies:
 
-#### users
+#### Schema Tables
 ```sql
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
@@ -350,29 +367,42 @@ CREATE TABLE IF NOT EXISTS users (
 );
 ```
 
-#### devices
-```sql
-CREATE TABLE IF NOT EXISTS devices (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
-    device_token TEXT NOT NULL,
-    device_type VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+#### User Model (Missing Fields)
+```javascript
+const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  email: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+    unique: true,
+    validate: {
+      isEmail: true
+    }
+  },
+  created_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  }
+}, {
+  tableName: 'users',
+  timestamps: false
+});
 ```
 
-#### notifications
-```sql
-CREATE TABLE IF NOT EXISTS notifications (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    title VARCHAR(255) NOT NULL,
-    body TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
-
-The schema file also defines additional tables that are planned for future implementation.
+### Missing Models:
+The following tables have schema definitions but no corresponding models:
+- user_preferences
+- sent_notifications
+- failed_notifications
+- notification_logs
+- email_logs
+- sms_logs
+- push_notification_logs
+- webhook_logs
 
 ## Message Queue Architecture
 
@@ -385,12 +415,12 @@ The service uses RabbitMQ for reliable message delivery, with the following comp
 ### Queues
 
 - **immediate_notifications**: For notifications to be delivered immediately
-- **scheduled_notifications**: For notifications scheduled for future delivery (currently only defined, not fully implemented)
+- **scheduled_notifications**: For notifications scheduled for future delivery (partially implemented)
 
 ### Routing Keys
 
 - **notification.immediate**: Routes to immediate_notifications queue
-- **notification.scheduled**: Routes to scheduled_notifications queue (planned for future implementation)
+- **notification.scheduled**: Routes to scheduled_notifications queue (partially implemented)
 
 ### Message Structure
 
@@ -401,7 +431,7 @@ The service uses RabbitMQ for reliable message delivery, with the following comp
   title: "Notification Title", // Notification title
   body: "Notification body",   // Notification message
   data: { ... },              // Additional data payload
-  scheduled_time: "2023-05-01T12:00:00Z" // For scheduled notifications (planned)
+  scheduled_time: "2023-05-01T12:00:00Z" // For scheduled notifications (partially implemented)
 }
 ```
 
@@ -502,6 +532,32 @@ Recommended minimum resources for current implementation:
 - Database: 1GB RAM
 - RabbitMQ: 512MB RAM
 
+## Known Issues and Improvement Areas
+
+1. **User Model Discrepancy**:
+   - The User model is missing `name` and `phone` fields that exist in the database schema
+   - **Fix**: Update the User model to include all fields from the schema
+
+2. **Missing Model Files**:
+   - Several tables defined in the schema don't have corresponding model files
+   - **Fix**: Create model files for UserPreference, SentNotification, NotificationLog, etc.
+
+3. **Scheduled Notifications**:
+   - Worker logic exists but API endpoint is not implemented
+   - **Fix**: Implement the scheduled notifications API endpoint and controller
+
+4. **Hardcoded Configuration**:
+   - Database configuration uses hardcoded values instead of environment variables
+   - **Fix**: Use environment variables throughout the configuration files
+
+5. **Redis Integration**:
+   - Limited Redis functionality
+   - **Fix**: Expand Redis integration for caching, rate limiting, and more robust presence tracking
+
+6. **API Documentation Alignment**:
+   - Some API documentation doesn't accurately reflect implementation status
+   - **Fix**: Update API documentation to match actual implementation
+
 ## Code Style and Patterns
 
 The codebase follows these patterns and conventions:
@@ -572,4 +628,23 @@ Test suite is planned for future implementation. The current architecture suppor
 
 ## Roadmap and Future Enhancements
 
-Please refer to the [Implementation Status](IMPLEMENTATION_STATUS.md) document for details on planned enhancements and roadmap.
+### Short-term (Next Release)
+
+1. Fix User model to match database schema (add name and phone fields)
+2. Implement scheduled notifications API endpoint
+3. Create models for user preferences and notification logs
+4. Improve Redis integration for better caching and rate limiting
+
+### Mid-term
+
+1. Implement multi-channel delivery (email, SMS)
+2. Add user preferences functionality
+3. Implement notification templates
+4. Complete ELK stack integration
+
+### Long-term
+
+1. Implement webhook integration
+2. Add advanced analytics
+3. Implement notification batching
+4. Add A/B testing capabilities
