@@ -4,7 +4,7 @@
 
 require('dotenv').config();
 const { Sequelize, DataTypes } = require('sequelize');
-const faker = require('faker');
+const { faker } = require('@faker-js/faker');
 const { v4: uuidv4 } = require('uuid');
 
 // Configure database connection
@@ -211,9 +211,9 @@ const generateData = async () => {
     
     for (let i = 0; i < userCount; i++) {
       users.push({
-        name: faker.name.findName(),
+        name: faker.person.fullName(),
         email: faker.internet.email(),
-        phone: faker.phone.phoneNumber(),
+        phone: faker.phone.number(),
         created_at: randomDate(new Date(2023, 0, 1), new Date())
       });
     }

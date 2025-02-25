@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8'
 
 services:
   # Database seeder container
@@ -165,3 +165,4 @@ volumes:
   elasticsearch_data:
   prometheus_data:
   grafana_data:
+  node_modules:
