@@ -159,7 +159,7 @@ The documentation for this project is organized into several documents to help y
    docker-compose ps
    
    # Check API availability
-   curl http://localhost:3000/api/healthcheck
+   curl http://localhost:3001/api/healthcheck
    ```
 
 For more detailed setup instructions, refer to the [Setup Guide](Setup_and_configuration_guide.md).
