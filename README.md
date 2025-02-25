@@ -45,7 +45,7 @@ The current implementation includes:
 🔄 Advanced metrics and dashboards  
 🔄 Full ELK stack integration  
 
-For detailed status information, see the [Implementation Status](IMPLEMENTATION_STATUS.md) document.
+For detailed status information, see the [Implementation Status](https://github.com/longvv/push-notification-service/blob/main/implementation-status.md) document.
 
 ## Features
 
