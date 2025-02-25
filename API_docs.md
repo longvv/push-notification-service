@@ -17,7 +17,7 @@ https://your-domain.com/api
 
 For local development:
 ```
-http://localhost:3000/api
+http://localhost:3001/api
 ```
 
 ## Authentication
