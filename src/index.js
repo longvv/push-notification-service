@@ -9,7 +9,7 @@ const logger = require('./config/logging');
 const { syncModels } = require('./models');
 const startWorkers = require('./workers');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 const startServer = async () => {
   try {
