@@ -142,10 +142,10 @@ The documentation for this project is organized into several documents to help y
    cd push-notification-service
    ```
 
-2. Create environment variables:
+2. Setup environment:
    ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
+   chmod +X setup.sh
+   ./setup.sh
    ```
 
 3. Start the services with Docker Compose:
