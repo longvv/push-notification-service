@@ -6,7 +6,7 @@ const logger = require('./logging');
 // Đọc token từ file (được mount từ Docker)
 const getVaultToken = async () => {
     try {
-        const tokenFile = process.env.VAULT_TOKEN_FILE || '/vault/runtime/notification-token';
+        const tokenFile = process.env.VAULT_TOKEN_FILE || '/vault/token/notification-token';
         return await fs.readFile(tokenFile, 'utf8');
     } catch (error) {
         logger.error('Không thể đọc Vault token:', error);

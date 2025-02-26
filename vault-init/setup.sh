@@ -48,7 +48,7 @@ path "secret/data/notification-service/*" {
 EOF
 
 # Tạo token cho dịch vụ thông báo với policy đã tạo
-mkdir -p /vault/runtime
-vault token create -policy=notification-service -format=json | jq -r ".auth.client_token" > /vault/runtime/notification-token
+mkdir -p /vault/config
+vault token create -policy=notification-service -format=json | jq -r ".auth.client_token" > /vault/config/notification-token
 
 echo "Vault đã được cấu hình thành công!"
