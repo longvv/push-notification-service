@@ -62,13 +62,15 @@ services:
   
   # API Server
   api:
-    build: .
+    image: node:18-alpine
     ports:
       - "3001:3001"
     volumes:
       - ./:/app
       - node_modules:/app/node_modules
       - ./vault-init:/vault/token
+    working_dir: /app
+    command: sh -c "npm install && node src/index.js"
     environment:
       # Database connection
       - DB_HOST=postgres
