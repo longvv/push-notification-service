@@ -1,47 +1,240 @@
 ---
-sidebar_position: 1
+id: intro
+title: Push Notification Service
+sidebar_label: Introduction
+slug: /
 ---
 
-# Tutorial Intro
+# Push Notification Service
 
-Let's discover **Docusaurus in less than 5 minutes**.
+A scalable and robust service for managing and delivering push notifications across multiple channels.
+
+## Overview
+
+The Push Notification Service is a microservice-based platform designed to handle notification delivery with a focus on real-time push notifications and WebSocket delivery. The service is being developed incrementally, with more features planned for future releases.
+
+## Implementation Status
+
+The current implementation includes:
+
+✅ **Core API server** - RESTful API for managing users, devices, and basic notifications  
+✅ **Basic database integration** - PostgreSQL for storing entity data  
+✅ **WebSocket notifications** - Real-time delivery to connected clients  
+✅ **User and device management** - Registration and lookup functionality  
+✅ **Basic notification sending** - Immediate notification delivery  
+✅ **Message queueing** - RabbitMQ integration for notification processing  
+⚠️ **Scheduled notifications** - Worker implementation exists but API endpoint is not yet implemented  
+⚠️ **Basic metrics** - Prometheus integration for system monitoring (dashboard not complete)  
+✅ **Containerization** - Docker and Docker Compose setup  
+✅ **Test data generation** - Database seeder for development  
+
+**Planned for future releases:**
+
+🔄 Multi-channel delivery (email, SMS)  
+🔄 Comprehensive delivery tracking  
+🔄 User preferences  
+🔄 Notification templates  
+🔄 Webhook integration  
+🔄 Advanced metrics and dashboards  
+🔄 Full ELK stack integration  
+
+For detailed status information, see the [Implementation Status](implementation-status) document.
+
+## Features
+
+Current features:
+
+- **Real-time notifications** - WebSocket support for instant delivery
+- **Message queueing** - RabbitMQ for reliable message delivery
+- **Basic monitoring** - Prometheus integration for system metrics
+- **Centralized logging** - Winston logger for aggregating logs
+- **User management** - Basic API for user management
+- **Device management** - Register/unregister devices for notifications
+
+Features planned for future releases:
+
+- Multi-channel delivery (email, SMS)
+- Notification scheduling
+- Delivery status tracking
+- User notification preferences
+- Notification templates
+
+## System Architecture
+
+The Push Notification Service follows a microservice architecture with the following components:
+
+### Current Architecture
+
+```mermaid
+flowchart TD
+    Clients[Clients] -->|Requests| APIServer[API Server]
+    APIServer -->|CRUD| Database[(PostgreSQL)]
+    APIServer -->|Messages| MessageQueue[RabbitMQ]
+    MessageQueue -->|Process| Workers[Notification Workers]
+    Workers -->|Send| WebSocket[WebSocket Server]
+    WebSocket -->|Deliver| WebClients[Web/App Clients]
+```
+
+### Components
+
+#### Currently Implemented
+
+- **PostgreSQL**: Primary database for storing user data, device information, and notification history
+- **RabbitMQ**: Message broker for managing notification queues
+- **API Server**: RESTful API for managing users, devices, and notifications
+- **WebSocket Server**: Real-time notification delivery
+- **Notification Workers**: Process and send notifications from queues
+
+#### Partially Implemented
+
+- **Redis**: For basic user presence and WebSocket connection tracking
+- **Prometheus**: For basic metrics collection
+
+#### Planned for Future Implementation
+
+- **Full Redis Integration**: Enhanced caching, rate limiting, and managing WebSocket connections
+- **ELK Stack**: Elasticsearch, Logstash, and Kibana for log management
+- **Grafana**: For metrics visualization
+
+## Documentation Guide
+
+The documentation for this project is organized into several documents to help you understand and use the system effectively:
+
+1. **Introduction** (this document) - Overview and gateway to other documentation
+2. **[Setup Guide](setup-and-configuration)** - Detailed installation and configuration instructions
+3. **[API Documentation](api)** - Complete API reference for all endpoints
+4. **[Technical Documentation](technical-docs)** - Detailed technical implementation details
+5. **[Implementation Status](implementation-status)** - Detailed status of features and components
 
 ## Getting Started
 
-Get started by **creating a new site**.
+### Prerequisites
 
-Or **try Docusaurus immediately** with **[docusaurus.new](https://docusaurus.new)**.
+- Docker and Docker Compose
+- Node.js (v16+) for local development
+- PostgreSQL client (optional, for direct DB access)
 
-### What you'll need
+### Quick Start
 
-- [Node.js](https://nodejs.org/en/download/) version 18.0 or above:
-  - When installing Node.js, you are recommended to check all checkboxes related to dependencies.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/push-notification-service.git
+   cd push-notification-service
+   ```
 
-## Generate a new site
+2. Setup environment:
+   ```bash
+   chmod +X setup.sh
+   ./setup.sh
+   ```
 
-Generate a new Docusaurus site using the **classic template**.
+3. Start the services with Docker Compose:
+   ```bash
+   docker-compose up -d
+   ```
 
-The classic template will automatically be added to your project after you run the command:
+4. Verify the installation:
+   ```bash
+   # Check if all services are running
+   docker-compose ps
+   
+   # Check API availability
+   curl http://localhost:3001/api/healthcheck
+   ```
 
-```bash
-npm init docusaurus@latest my-website classic
+For more detailed setup instructions, refer to the [Setup Guide](setup-and-configuration).
+
+## API Reference
+
+The service provides a RESTful API for managing users, devices, and notifications. Below are the currently implemented endpoints:
+
+### Authentication
+
+API authentication system is planned for future implementation. Currently, endpoints are accessible without authentication.
+
+### Currently Implemented Endpoints
+
+#### User Management
+
+- `POST /api/users` - Create a new user
+- `GET /api/users` - Get all users
+- `GET /api/users/:id` - Get a specific user by ID
+
+#### Device Management
+
+- `POST /api/users/:userId/devices` - Register a new device for a user
+- `GET /api/users/:userId/devices` - Get all devices for a user
+- `DELETE /api/users/:userId/devices/:deviceId` - Unregister a device
+
+#### Notification Management
+
+- `POST /api/notifications` - Send an immediate notification
+- `GET /api/notifications/user/:userId` - Get notifications for a user
+
+For complete API documentation including planned endpoints, refer to the [API Documentation](api).
+
+## WebSocket Interface
+
+The service provides a WebSocket interface for real-time notifications.
+
+### Connection
+
+Connect to the WebSocket server:
+
+```
+ws://your-domain.com
 ```
 
-You can type this command into Command Prompt, Powershell, Terminal, or any other integrated terminal of your code editor.
-
-The command also installs all necessary dependencies you need to run Docusaurus.
-
-## Start your site
-
-Run the development server:
-
-```bash
-cd my-website
-npm run start
+For local development:
+```
+ws://localhost:3000
 ```
 
-The `cd` command changes the directory you're working with. In order to work with your newly created Docusaurus site, you'll need to navigate the terminal there.
+### Authentication
 
-The `npm run start` command builds your website locally and serves it through a development server, ready for you to view at http://localhost:3000/.
+After connecting, authenticate the WebSocket connection:
 
-Open `docs/intro.md` (this page) and edit some lines: the site **reloads automatically** and displays your changes.
+```javascript
+// Client-side example
+const socket = io('http://localhost:3000');
+socket.emit('authenticate', { userId: 1 });
+
+socket.on('authenticated', (response) => {
+  console.log('Authentication successful', response);
+});
+
+socket.on('error', (error) => {
+  console.error('Authentication failed', error);
+});
+```
+
+### Receiving Notifications
+
+Listen for notification events:
+
+```javascript
+// Client-side example
+socket.on('notification', (notification) => {
+  console.log('New notification received', notification);
+  // Handle the notification in your UI
+});
+```
+
+## Contributing
+
+Contributions are welcome! Please read our contributing guidelines before submitting pull requests.
+
+### Development Setup
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start necessary services in development mode:
+   ```bash
+   docker-compose up -d postgres rabbitmq
+   npm run dev
+   ```
+
+For more information on development workflow, check the [Technical Documentation](technical-docs).
