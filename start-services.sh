@@ -81,9 +81,9 @@ main() {
   echo "Configuring Vault..."
   docker compose exec -T vault sh /vault/config/setup.sh
   
-  # Start remaining services
+  # Start remaining services (excluding vault which is already running)
   echo "Starting remaining services..."
-  docker compose up -d
+  docker compose up -d postgres redis rabbitmq elasticsearch kibana logstash prometheus grafana api db-seeder
   
   echo "All services started successfully!"
 }
