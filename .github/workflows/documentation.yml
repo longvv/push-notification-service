@@ -2,7 +2,11 @@ name: Deploy Docusaurus
 
 on:
   push:
-    branches: [main]  # Or the branch you selected in GitHub Pages settings
+    branches: [main]  # or whatever your default branch is
+
+# Add this permissions block
+permissions:
+  contents: write
 
 jobs:
   deploy:
