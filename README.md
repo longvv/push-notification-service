@@ -23,7 +23,7 @@ npm install
 npm start
 ```
 
-This will launch the documentation site at [http://localhost:3000](http://localhost:3000).
+This will launch the documentation site at [http://localhost:3002](http://localhost:3002).
 
 #### Online Documentation
 
