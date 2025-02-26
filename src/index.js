@@ -14,7 +14,12 @@ const PORT = process.env.PORT || 3001;
 
 const startServer = async () => {
   try {
+    // Bắt đầu Vault watcher trước
     await startConfigWatcher();
+    logger.info('Vault config watcher started');
+    
+    // Giãn cách một chút để đảm bảo cấu hình đã được tải
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Kết nối đến database
     await testConnection();

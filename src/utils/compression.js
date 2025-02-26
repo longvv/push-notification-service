@@ -7,13 +7,37 @@ const logger = require('../config/logging');
 // Ngưỡng kích thước để áp dụng nén (tính bằng byte)
 const COMPRESSION_THRESHOLD = 5 * 1024; // 5KB
 
+// Thêm cơ chế cache cấu hình
+let cachedConfig = null;
+let configExpiry = 0;
+
 const getCompressionConfig = async () => {
-  const config = await getConfig();
-  return config.compression || {
-    enabled: true,
-    threshold: 5 * 1024, // 5KB
-    level: 3
-  };
+  const now = Date.now();
+  
+  // Sử dụng cache nếu khả dụng và chưa hết hạn
+  if (cachedConfig && configExpiry > now) {
+    return cachedConfig;
+  }
+  
+  try {
+    const config = await getConfig();
+    cachedConfig = config.compression;
+    configExpiry = now + (5 * 60 * 1000); // Cache 5 phút
+    return cachedConfig;
+  } catch (error) {
+    // Nếu đã có cache, tiếp tục dùng dù đã hết hạn
+    if (cachedConfig) {
+      return cachedConfig;
+    }
+    
+    // Fallback về cấu hình mặc định
+    return {
+      enabled: true,
+      threshold: 5 * 1024,
+      level: 3,
+      enableMetrics: true
+    };
+  }
 };
 
 // Hàm kiểm tra xem dữ liệu có nên được nén hay không

@@ -4,6 +4,12 @@
 # Đợi Vault khởi động
 sleep 5
 
+# Đảm bảo jq được cài đặt
+if ! command -v jq &> /dev/null; then
+    echo "jq not found, installing..."
+    apk add --no-cache jq || apt-get update && apt-get install -y jq
+fi
+
 # Đăng nhập vào Vault với root token
 vault login dev-token
 
