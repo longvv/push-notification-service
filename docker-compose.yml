@@ -2,6 +2,7 @@ services:
   # Vault - Quản lý bí mật và cấu hình
   vault:
     image: hashicorp/vault:latest
+    entrypoint: ["/bin/sh", "-c", "vault server -dev & sleep 5 && /vault/config/setup.sh && tail -f /dev/null"]
     platform: linux/arm64  # Phù hợp với M2
     ports:
       - "8200:8200"
