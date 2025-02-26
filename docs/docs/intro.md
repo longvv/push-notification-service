@@ -38,7 +38,7 @@ The current implementation includes:
 🔄 Advanced metrics and dashboards  
 🔄 Full ELK stack integration  
 
-For detailed status information, see the [Implementation Status](implementation-status) document.
+For detailed status information, see the [Implementation Status](./implementation-status.md) document.
 
 ## Features
 
@@ -101,10 +101,10 @@ flowchart TD
 The documentation for this project is organized into several documents to help you understand and use the system effectively:
 
 1. **Introduction** (this document) - Overview and gateway to other documentation
-2. **[Setup Guide](setup-and-configuration)** - Detailed installation and configuration instructions
-3. **[API Documentation](api)** - Complete API reference for all endpoints
-4. **[Technical Documentation](technical-docs)** - Detailed technical implementation details
-5. **[Implementation Status](implementation-status)** - Detailed status of features and components
+2. **[Setup Guide](./setup-and-configuration.md)** - Detailed installation and configuration instructions
+3. **[API Documentation](./api.md)** - Complete API reference for all endpoints
+4. **[Technical Documentation](./technical-docs.md)** - Detailed technical implementation details
+5. **[Implementation Status](./implementation-status.md)** - Detailed status of features and components
 
 ## Getting Started
 
@@ -142,7 +142,7 @@ The documentation for this project is organized into several documents to help y
    curl http://localhost:3001/api/healthcheck
    ```
 
-For more detailed setup instructions, refer to the [Setup Guide](setup-and-configuration).
+For more detailed setup instructions, refer to the [Setup Guide](./setup-and-configuration.md).
 
 ## API Reference
 
@@ -171,7 +171,7 @@ API authentication system is planned for future implementation. Currently, endpo
 - `POST /api/notifications` - Send an immediate notification
 - `GET /api/notifications/user/:userId` - Get notifications for a user
 
-For complete API documentation including planned endpoints, refer to the [API Documentation](api).
+For complete API documentation including planned endpoints, refer to the [API Documentation](./api.md).
 
 ## WebSocket Interface
 
@@ -196,7 +196,7 @@ After connecting, authenticate the WebSocket connection:
 
 ```javascript
 // Client-side example
-const socket = io('http://localhost:3000');
+const socket = io('http://localhost:3001');
 socket.emit('authenticate', { userId: 1 });
 
 socket.on('authenticated', (response) => {
@@ -237,4 +237,4 @@ Contributions are welcome! Please read our contributing guidelines before submit
    npm run dev
    ```
 
-For more information on development workflow, check the [Technical Documentation](technical-docs).
+For more information on development workflow, check the [Technical Documentation](./technical-docs.md).
