@@ -27,7 +27,7 @@ This will launch the documentation site at [http://localhost:3002](http://localh
 
 #### Online Documentation
 
-Our documentation is also available online at [https://your-domain.com/push-notification-docs](https://your-domain.com/push-notification-docs)
+Our documentation is also available online at [https://longvv.github.io/push-notification-service/](https://longvv.github.io/push-notification-service/)
 
 ### Documentation Structure
 
