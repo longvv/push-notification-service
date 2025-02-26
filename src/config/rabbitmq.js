@@ -1,5 +1,6 @@
 // src/config/rabbitmq.js
 const amqp = require('amqplib');
+const { maybeCompress, maybeDecompress } = require('../utils/compression');
 
 let connection = null;
 let channel = null;
@@ -45,11 +46,20 @@ const publishMessage = async (routingKey, message) => {
   try {
     if (!channel) await connectRabbitMQ();
     
+    // Áp dụng nén có điều kiện
+    const { data: messageData, metadata } = await maybeCompress(message);
+    
     return channel.publish(
       'notifications',
       routingKey,
-      Buffer.from(JSON.stringify(message)),
-      { persistent: true }
+      messageData,
+      { 
+        persistent: true,
+        headers: {
+          // Thêm metadata để biết cách xử lý khi nhận
+          compressionMetadata: metadata
+        }
+      }
     );
   } catch (error) {
     console.error('Error publishing message:', error);
@@ -64,7 +74,22 @@ const consumeMessages = async (queueName, callback) => {
     await channel.consume(queueName, async (message) => {
       if (message) {
         try {
-          const content = JSON.parse(message.content.toString());
+          // Lấy metadata nén từ headers
+          const metadata = message.properties.headers?.compressionMetadata;
+          
+          // Xử lý dữ liệu theo trạng thái nén
+          let content;
+          if (metadata) {
+            // Giải nén nếu cần
+            content = await maybeDecompress({ 
+              data: message.content, 
+              metadata 
+            });
+          } else {
+            // Xử lý theo cách thông thường nếu không có metadata
+            content = JSON.parse(message.content.toString());
+          }
+          
           await callback(content);
           channel.ack(message);
         } catch (error) {

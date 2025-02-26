@@ -31,10 +31,32 @@ const activeWebsocketConnections = new promClient.Gauge({
   help: 'Number of active websocket connections'
 });
 
+const compressionStats = new promClient.Counter({
+  name: 'compression_operations_total',
+  help: 'Total number of compression operations',
+  labelNames: ['operation', 'compressed']
+});
+
+const compressionRatio = new promClient.Histogram({
+  name: 'compression_ratio',
+  help: 'Compression ratio (original size / compressed size)',
+  buckets: [1, 1.5, 2, 3, 5, 10]
+});
+
+const compressionTime = new promClient.Histogram({
+  name: 'compression_time_seconds',
+  help: 'Time spent on compression/decompression operations',
+  labelNames: ['operation'],
+  buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5]
+});
+
 // Register the custom metrics
 register.registerMetric(notificationsSent);
 register.registerMetric(notificationLatency);
 register.registerMetric(activeWebsocketConnections);
+register.registerMetric(compressionStats);
+register.registerMetric(compressionRatio);
+register.registerMetric(compressionTime);
 
 module.exports = {
   register,

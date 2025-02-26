@@ -1,0 +1,92 @@
+const fs = require('fs').promises;
+const path = require('path');
+const vault = require('node-vault');
+const logger = require('./logging');
+
+// Đọc token từ file (được mount từ Docker)
+const getVaultToken = async () => {
+  try {
+    const tokenFile = process.env.VAULT_TOKEN_FILE || '/vault/token/notification-token';
+    return await fs.readFile(tokenFile, 'utf8');
+  } catch (error) {
+    logger.error('Không thể đọc Vault token:', error);
+    return process.env.VAULT_TOKEN || 'dev-token';
+  }
+};
+
+// Khởi tạo Vault client
+const initVaultClient = async () => {
+  const token = await getVaultToken();
+  return vault({
+    apiVersion: 'v1',
+    endpoint: process.env.VAULT_ADDR || 'http://vault:8200',
+    token: token.trim()
+  });
+};
+
+// Cache cấu hình
+let configCache = {};
+let cacheExpiry = 0;
+const CACHE_TTL = 5 * 60 * 1000; // 5 phút
+
+// Lấy cấu hình từ Vault
+const getConfig = async (refresh = false) => {
+  const now = Date.now();
+  
+  // Trả về cache nếu còn hợp lệ
+  if (!refresh && cacheExpiry > now && Object.keys(configCache).length > 0) {
+    return configCache;
+  }
+  
+  try {
+    const client = await initVaultClient();
+    
+    // Đọc cấu hình
+    const compressionResult = await client.read('secret/data/notification-service/compression');
+    const redisResult = await client.read('secret/data/notification-service/redis');
+    const rabbitmqResult = await client.read('secret/data/notification-service/rabbitmq');
+    
+    // Cấu trúc dữ liệu trả về từ Vault KV version 2
+    configCache = {
+      compression: compressionResult.data.data,
+      redis: redisResult.data.data,
+      rabbitmq: rabbitmqResult.data.data
+    };
+    
+    cacheExpiry = now + CACHE_TTL;
+    return configCache;
+  } catch (error) {
+    logger.error('Lỗi khi truy xuất cấu hình từ Vault:', error);
+    
+    // Sử dụng cache cũ nếu có
+    if (Object.keys(configCache).length > 0) {
+      logger.warn('Sử dụng cache cũ cho cấu hình');
+      return configCache;
+    }
+    
+    // Fallback vào cấu hình mặc định
+    return {
+      compression: {
+        enabled: true,
+        threshold: 5120,
+        level: 3,
+        enableMetrics: true
+      },
+      redis: {
+        host: 'redis',
+        port: 6379
+      },
+      rabbitmq: {
+        host: 'rabbitmq',
+        port: 5672,
+        user: 'admin',
+        password: 'admin123'
+      }
+    };
+  }
+};
+
+module.exports = {
+  getConfig,
+  refreshConfig: () => getConfig(true)
+};

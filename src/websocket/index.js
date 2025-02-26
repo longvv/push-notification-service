@@ -3,6 +3,7 @@ const socketIO = require('socket.io');
 const { redisClient } = require('../config/redis');
 const logger = require('../config/logging');
 const { metrics } = require('../config/metrics');
+const { maybeCompress } = require('../utils/compression');
 
 let io;
 
@@ -87,19 +88,29 @@ const setupWebsocket = (server) => {
 // Function to send a notification to a specific user
 const sendNotificationToUser = async (userId, notification) => {
     try {
-        if (!io) {
-            throw new Error('WebSocket server not initialized');
-        }
-
-        // Send to all sockets in the user's room
-        io.to(`user:${userId}`).emit('notification', notification);
-        logger.info(`Notification sent to user ${userId} via WebSocket`);
-        return true;
+      if (!io) {
+        throw new Error('WebSocket server not initialized');
+      }
+  
+      // Áp dụng nén có điều kiện
+      const { data, metadata } = await maybeCompress(notification);
+      
+      // Chuyển đổi buffer thành base64 nếu cần thiết để truyền qua WebSocket
+      const payload = {
+        data: Buffer.isBuffer(data) ? data.toString('base64') : data,
+        metadata
+      };
+      
+      // Gửi thông báo với metadata đi kèm
+      io.to(`user:${userId}`).emit('notification', payload);
+      
+      logger.info(`Notification sent to user ${userId} via WebSocket (compressed: ${metadata.compressed})`);
+      return true;
     } catch (error) {
-        logger.error(`Error sending notification via WebSocket: ${error.message}`);
-        return false;
+      logger.error(`Error sending notification via WebSocket: ${error.message}`);
+      return false;
     }
-};
+  };
 
 // Function to broadcast notification to all connected clients
 const broadcastNotification = (notification) => {

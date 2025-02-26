@@ -8,11 +8,14 @@ const { connectRabbitMQ } = require('./config/rabbitmq');
 const logger = require('./config/logging');
 const { syncModels } = require('./models');
 const startWorkers = require('./workers');
+const { startConfigWatcher } = require('./config/vault');
 
 const PORT = process.env.PORT || 3001;
 
 const startServer = async () => {
   try {
+    await startConfigWatcher();
+
     // Kết nối đến database
     await testConnection();
     
