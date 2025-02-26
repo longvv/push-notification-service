@@ -12,14 +12,14 @@ const config = {
   tagline: 'A scalable and robust service for managing and delivering push notifications across multiple channels',
   favicon: 'img/favicon.ico',
 
-  // Set the production url of your site here
-  url: 'https://your-domain.com',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  baseUrl: '/',
+  url: 'https://longvv.github.io',
+  baseUrl: '/push-notification-service/',
+  organizationName: 'longvv', // Your GitHub username
+  projectName: 'push-notification-service', // Your repo name
 
-  // GitHub pages deployment config.
-  organizationName: 'your-org', 
-  projectName: 'push-notification-service',
+  // Make sure this matches the branch you're using
+  deploymentBranch: 'gh-pages',
+  trailingSlash: false,
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
