@@ -10,7 +10,7 @@ const { syncModels } = require('./models');
 const startWorkers = require('./workers');
 const { startConfigWatcher } = require('./config/vault');
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3003;
 
 const startServer = async () => {
   try {
