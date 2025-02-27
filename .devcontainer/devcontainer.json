@@ -1,0 +1,16 @@
+{
+    "name": "Push Notification Service",
+    "dockerComposeFile": "../docker-compose.yml",
+    "service": "api",
+    "workspaceFolder": "/app",
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "dbaeumer.vscode-eslint",
+          "github.copilot"
+        ]
+      }
+    },
+    "forwardPorts": [3003],
+    "postCreateCommand": "npm install"
+  }
