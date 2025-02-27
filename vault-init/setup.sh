@@ -48,8 +48,6 @@ path "secret/data/notification-service/*" {
 EOF
 
 # Tạo token cho dịch vụ thông báo với policy đã tạo
-# mkdir -p /vault/token
-# ln -sf /vault/config/notification-token /vault/token/notification-token
 chmod 644 /vault/config/notification-token
 
 echo "Vault đã được cấu hình thành công!"

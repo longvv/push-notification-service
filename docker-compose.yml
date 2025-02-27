@@ -27,7 +27,7 @@ services:
     volumes:
       - ./:/app
       - node_modules:/app/node_modules
-      - ./vault-init:/vault/token
+      - ./vault-init:/vault/config
     working_dir: /app
     environment:
       # Database connection
@@ -68,7 +68,7 @@ services:
     volumes:
       - ./:/app
       - node_modules:/app/node_modules
-      - ./vault-init:/vault/token
+      - ./vault-init:/vault/config
     working_dir: /app
     command: sh -c "npm install && node src/index.js"
     environment:
@@ -178,7 +178,7 @@ services:
       - "5044:5044"
     volumes:
       - ./logstash/pipeline:/usr/share/logstash/pipeline
-      - ./vault-init:/vault/token
+      - ./vault-init:/vault/config
     environment:
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN_FILE=/vault/config/notification-token
@@ -228,7 +228,7 @@ services:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./vault-init:/vault/token
+      - ./vault-init:/vault/config
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin123
