@@ -1,10 +1,10 @@
 // src/config/database.js
 const { Sequelize } = require('sequelize');
 const config = {
-  database: 'notification_db',  // Important: Use the correct database name
-  username: 'admin',
-  password: 'admin123',
-  host: 'localhost',
+  database: process.env.DB_NAME || 'notification_db',
+  username: process.env.DB_USER || 'admin',
+  password: process.env.DB_PASSWORD || 'admin123',
+  host: process.env.DB_HOST || 'localhost',
   dialect: 'postgres',
   logging: console.log,
 };
