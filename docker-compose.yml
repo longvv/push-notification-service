@@ -43,7 +43,7 @@ services:
       - MODE=sequelize
       # Vault configuration
       - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN_FILE=/vault/token/notification-token
+      - VAULT_TOKEN_FILE=/vault/config/notification-token
     depends_on:
       vault:
         condition: service_healthy
@@ -88,7 +88,7 @@ services:
       - RABBITMQ_PASSWORD=admin123
       # Vault configuration
       - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN_FILE=/vault/token/notification-token
+      - VAULT_TOKEN_FILE=/vault/config/notification-token
     depends_on:
       vault:
         condition: service_healthy
@@ -181,7 +181,7 @@ services:
       - ./vault-init:/vault/token
     environment:
       - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN_FILE=/vault/token/notification-token
+      - VAULT_TOKEN_FILE=/vault/config/notification-token
     depends_on:
       vault:
         condition: service_healthy
@@ -233,7 +233,7 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin123
       - VAULT_ADDR=http://vault:8200
-      - VAULT_TOKEN_FILE=/vault/token/notification-token
+      - VAULT_TOKEN_FILE=/vault/config/notification-token
     depends_on:
       vault:
         condition: service_healthy
