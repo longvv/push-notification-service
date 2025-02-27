@@ -6,10 +6,32 @@ const logger = require('./logging');
 // Đọc token từ file (được mount từ Docker)
 const getVaultToken = async () => {
     try {
-        const tokenFile = process.env.VAULT_TOKEN_FILE || '/vault/config/notification-token';
-        return await fs.readFile(tokenFile, 'utf8');
+
+        if (process.env.NODE_ENV !== 'production') {
+            return 'dev-token';  // Token mặc định khi dev local
+        }
+        
+        if (process.env.VAULT_TOKEN) {
+            return process.env.VAULT_TOKEN;
+        }
+
+        try {
+            const tokenFile = process.env.VAULT_TOKEN_FILE || '/vault/config/notification-token';
+            await fs.access(tokenFile);
+            return await fs.readFile(tokenFile, 'utf8');
+        } catch (accessError) {
+            // Nếu đang chạy local, kiểm tra ở đường dẫn local
+            const isRunningLocally = tokenFile.includes('/vault/') && !require('fs').existsSync(tokenFile);
+            if (isRunningLocally) {
+                // Sử dụng đường dẫn local (thay thế với đường dẫn file token thực tế trên máy của bạn)
+                const localTokenPath = './vault-init/notification-token';
+                return await fs.readFile(localTokenPath, 'utf8');
+            }
+            throw accessError;
+        }
     } catch (error) {
         logger.error('Không thể đọc Vault token:', error);
+        // Fallback vào default token hoặc env var
         return process.env.VAULT_TOKEN || 'dev-token';
     }
 };
