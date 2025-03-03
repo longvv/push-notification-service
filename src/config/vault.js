@@ -123,11 +123,11 @@ const getConfig = async (refresh = false, retryCount = 0) => {
                 enableMetrics: true
             },
             redis: {
-                host: 'redis',
+                host: 'localhost',
                 port: 6379
             },
             rabbitmq: {
-                host: 'rabbitmq',
+                host: 'localhost',
                 port: 5672,
                 user: 'admin',
                 password: 'admin123'

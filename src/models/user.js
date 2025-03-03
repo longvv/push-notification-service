@@ -16,6 +16,15 @@ const User = sequelize.define('User', {
       isEmail: true
     }
   },
+  phone: {
+    type: DataTypes.STRING(20),
+    allowNull: false,
+    unique: true,
+    validate: {
+      isNumeric: true,
+      len: [10, 15]
+    }
+  },
   created_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
