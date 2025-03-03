@@ -1,34 +1,37 @@
 {
-  "name": "push-notification",
+  "name": "server-starter",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Server starter framework with a modular, extensible architecture",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
-    "@faker-js/faker": "^9.5.0",
-    "amqplib": "^0.10.5",
+    "amqplib": "^0.10.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "helmet": "^8.0.0",
-    "node-vault": "^0.10.2",
-    "node-zstandard": "^1.2.4",
-    "prom-client": "^15.1.3",
-    "redis": "^4.7.0",
-    "sequelize": "^6.37.5",
-    "socket.io": "^4.8.1",
-    "winston": "^3.17.0"
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "helmet": "^6.0.1",
+    "node-vault": "^0.9.22",
+    "node-zstandard": "^1.2.2",
+    "prom-client": "^14.2.0",
+    "redis": "^4.6.5",
+    "sequelize": "^6.29.0",
+    "socket.io": "^4.6.1",
+    "winston": "^3.8.2"
   },
   "devDependencies": {
-    "pg": "^8.13.3",
-    "pg-hstore": "^2.3.4",
-    "sequelize-auto": "^0.8.8"
-  }
+    "eslint": "^8.35.0",
+    "jest": "^29.5.0",
+    "nodemon": "^2.0.21",
+    "supertest": "^6.3.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "license": "MIT"
 }

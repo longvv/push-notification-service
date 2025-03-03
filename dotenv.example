@@ -1,0 +1,32 @@
+# Application
+APP_NAME=server-starter
+APP_VERSION=1.0.0
+NODE_ENV=development
+PORT=3003
+HOST=0.0.0.0
+LOG_LEVEL=debug
+
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=server_starter
+DB_USER=postgres
+DB_PASSWORD=postgres
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# RabbitMQ
+RABBITMQ_HOST=localhost
+RABBITMQ_PORT=5672
+RABBITMQ_USER=guest
+RABBITMQ_PASSWORD=guest
+RABBITMQ_VHOST=/
+
+# CORS
+CORS_ORIGIN=*
+
+# Monitoring
+ENABLE_METRICS=true
+METRICS_PATH=/metrics
